@@ -185,6 +185,7 @@ void dump_instruction() {
 }
 
 template <typename Func>
+// Itera sobre cada instrução no traço e executa o callback para cada instrução
 void for_ins_in_trace(const TRACE& trace, Func f) {
   for(BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for(INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
@@ -194,12 +195,15 @@ void for_ins_in_trace(const TRACE& trace, Func f) {
 }
 
 void insert_instrumentation(TRACE trace, void* v) {
+  // O que é rip???
   if(need_to_change_rip) {
+    // Insere função para mudar o rip para cada instrução no traço
     for_ins_in_trace(trace, [](const INS& ins) {
       INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)change_rip, IARG_CONTEXT,
                      IARG_END);
     });
   } else if(fast_forward_insts_left > 500) {
+    // Insere função fast_forward_trace no traço
     TRACE_InsertCall(trace, IPOINT_BEFORE, (AFUNPTR)fast_forward_trace,
                      IARG_UINT32, TRACE_NumIns(trace), IARG_END);
   } else {
@@ -207,6 +211,8 @@ void insert_instrumentation(TRACE trace, void* v) {
       INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)fast_forward_ins, IARG_END);
       INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)check_end_of_trace, IARG_END);
       pin_decoder_insert_analysis_functions(ins);
+
+      // Faz dumping das instruções
       if(output_stream) {
         INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)dump_instruction, IARG_END);
       }
@@ -235,6 +241,7 @@ int main(int argc, char* argv[]) {
 
   pin_decoder_init(true, &std::cerr);
 
+  // Não sei qual instrumentação está sendo inserida
   TRACE_AddInstrumentFunction(insert_instrumentation, 0);
   PIN_AddFiniFunction(Fini, 0);
 

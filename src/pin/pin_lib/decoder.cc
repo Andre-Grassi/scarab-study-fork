@@ -105,22 +105,31 @@ void pin_decoder_init(bool translate_x87_regs, std::ostream* err_ostream) {
 }
 
 void pin_decoder_insert_analysis_functions(const INS& ins) {
-  ctype_pin_inst*     info    = get_inst_info_obj(ins);
+  // Struct com informações sobre a instrução
+  ctype_pin_inst* info = get_inst_info_obj(ins);
+
+  // Decodifica instrução com xed
   xed_decoded_inst_t* xed_ins = INS_XedDec(ins);
+
+  // Insere mais informações no info conforme obtido com xed??????
   fill_in_basic_info(info, xed_ins);
 
   info->instruction_addr = INS_Address(ins);
   // Note: should be overwritten for a taken control flow instruction
+  // Pega endereço da próxima instrução
   info->instruction_next_addr = INS_NextAddress(ins);
+  // Se for branch, pega o branch target
   if(INS_IsDirectBranchOrCall(ins)) {
     info->branch_target = INS_DirectBranchOrCallTargetAddress(ins);
   }
 
+  // Checa se é instrução gather ou scatter. Não sei o que isso significa
   if(INS_IsVgather(ins) || INS_IsVscatter(ins)) {
     xed_category_enum_t category           = XED_INS_Category(xed_ins);
     scatter_info_storage[INS_Address(ins)] = add_to_gather_scatter_info_storage(
       INS_Address(ins), INS_IsVgather(ins), INS_IsVscatter(ins), category);
   }
+
   uint32_t max_op_width = add_dependency_info(info, xed_ins);
   fill_in_simd_info(info, xed_ins, max_op_width);
   if(INS_IsVgather(ins) || INS_IsVscatter(ins)) {
@@ -128,6 +137,8 @@ void pin_decoder_insert_analysis_functions(const INS& ins) {
   }
   apply_x87_bug_workaround(info, xed_ins);
   fill_in_cf_info(info, xed_ins);
+
+  // Insere função de análise???
   insert_analysis_functions(info, ins);
   print_err_if_invalid(info, xed_ins);
 }
