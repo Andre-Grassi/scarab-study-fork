@@ -48,6 +48,7 @@ def define_commandline_arguments():
       title='Phase Selection',
       description=('Knobs for selective enabling of different phases (If no '
                   'phase is specified, the scripts runs all phases)'))
+  # IMPORTANT Argumento para rodar Simpoints
   phase_group.add_argument(
       '-simp', '--run_simpoints',
       action='store_true',
@@ -170,6 +171,8 @@ def fix_simpoint_scripts():
       print('ERROR: PIN_ROOT environment variable is not set.')
       sys.exit(1)
 
+    # IMPORTANT os scripts do pinplay não estão mais dentro do pin, nem do 
+    # IMPORTANT sde, mas dentro do repositório https://github.com/intel/pinplay-tools 
     file_path = os.environ['PIN_ROOT'] + '/extras/pinplay/scripts/' + file_name
     if not os.path.isfile(file_path):
       print('ERROR: could not find a file at {}. Make sure you have set the '
@@ -195,6 +198,7 @@ SIMPOINTS_RUN_CMD_TEMPLATE = (
 '-t $PIN_ROOT/extras/pinplay/bin/intel64/pinplay-driver.so -bbprofile '
 '-slice_size {slice_size} -o {simpoints_relative_dir}/simpoints -- '
 '{run_command}\n'
+# IMPORTANT simpoint.py está no repositório das pinplay-tools: https://github.com/intel/pinplay-tools/blob/main/pinplay-scripts/simpoint.py
 'simpoint.py --data_dir {simpoints_relative_dir} --bbv_file simpoints.T.0.bb '
 '--simpoint_file simpoints -f 0 --maxk {maxk}\n')
 
