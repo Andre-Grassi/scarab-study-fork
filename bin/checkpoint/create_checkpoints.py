@@ -249,6 +249,7 @@ def run_simpoints_phase():
   cmds = setup_simpoint_dir_and_get_simpoint_commands()
 
   if not __args__.icount_override:
+    # WHAT È usando um batch que está sendo criado os simpoints????
     BatchManager([ Phase(cmds) ], processor_cores_per_node=__args__.num_threads).run()
   else:
     print("Icount override specified. Skipping simpoint creation...")
@@ -423,10 +424,12 @@ def create_checkpoints_phase(skip_long_running=False):
   print('Verify all simpoints are generated properly ...')
   simpoints = read_all_simpoints()
   print('Create checkpoints for all benchmarks ...')
+  # Obtém os comandos para geração de checkpoints para cada simpoint dos benchmarks
   cmds = setup_checkpoint_dirs_and_get_create_commands(simpoints)
 
   if not skip_long_running:
     print("Run create checkpoint commands...")
+    # Executa os comandos obtidos paralelamente (eu acho que é paralelo com o Batch)
     BatchManager([ Phase(cmds) ], processor_cores_per_node=__args__.num_threads).run()
 
 def get_all_checkpoint_paths(workload_path, workload_name):
